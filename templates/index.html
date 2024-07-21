@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDS Management Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin-left: 05%;
+            margin-right: 05%;
+            margin-bottom: auto;
+            margin-top: auto;
+            padding: 0;
+        }
+        .container {
+            width: 80%;
+            margin-left: 35%;
+            overflow: hidden;
+        }
+        header {
+            background: #35424a;
+            color: #ffffff;
+            padding-top: 20px;
+            min-height: 25px;
+            border-bottom: #e8491d 3px solid;
+        }
+        header a {
+            color: #ffffff;
+            text-decoration: none;
+            text-transform: uppercase;
+            font-size: 16px;
+        }
+        header ul {
+            padding: 0;
+            list-style: none;
+        }
+        header li {
+            float: right;
+            display: inline;
+            padding: 0 20px 0 20px;
+        }
+        .buttons {
+            margin-top: 20px;
+        }
+        .buttons button {
+            background: #35424a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        .buttons button:hover {
+            background: #e8491d;
+        }
+        table {
+            width: 45%;
+            margin-top: 20px;
+            margin-left: 20px;
+            border-collapse: collapse;
+            float: left;
+            margin-right: 5%;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #35424a;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f5f3f3;
+        }
+        .intrusion {
+            background-color: #ffdddd;
+        }
+        .non-intrusion {
+            background-color: #ddffdd;
+        }
+    </style>
+    <script>
+        function startSniffing() {
+            fetch('/start_sniffing', {method: 'POST'})
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    location.reload();
+                });
+        }
+
+        function stopSniffing() {
+            fetch('/stop_sniffing', {method: 'POST'})
+                .then(response => response.text())
+                .then(data => {
+                    alert(data);
+                    location.reload();
+                });
+        }
+
+        function fetchIntrusions() {
+            fetch('/api/intrusions')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('intrusions-tbody');
+                    tbody.innerHTML = '';
+                    data.forEach(intrusion => {
+                        const tr = document.createElement('tr');
+                        tr.classList.add('intrusion');
+                        tr.innerHTML = `
+                            <td>${intrusion.source_ip}</td>
+                            <td>${intrusion.source_port}</td>
+                            <td>${intrusion.destination_ip}</td>
+                            <td>${intrusion.destination_port}</td>
+                            <td>${intrusion.protocol}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        function fetchNonIntrusions() {
+            fetch('/api/non_intrusions')
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById('non-intrusions-tbody');
+                    tbody.innerHTML = '';
+                    data.forEach(packet => {
+                        const tr = document.createElement('tr');
+                        tr.classList.add('non-intrusion');
+                        tr.innerHTML = `
+                            <td>${packet.source_ip}</td>
+                            <td>${packet.source_port}</td>
+                            <td>${packet.destination_ip}</td>
+                            <td>${packet.destination_port}</td>
+                            <td>${packet.protocol}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                });
+        }
+
+        setInterval(fetchIntrusions, 5000); // Refresh intrusions every 5 seconds
+        setInterval(fetchNonIntrusions, 5000); // Refresh non-intrusions every 5 seconds
+    </script>
+</head>
+<body onload="fetchIntrusions(); fetchNonIntrusions();">
+    <header>
+        <div class="container">
+            <div id="branding">
+                <h1>Intrusion Detection System</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    <class="container">
+        <div class="buttons">
+            <button onclick="startSniffing()">Start Sniffing</button>
+            <button onclick="stopSniffing()">Stop Sniffing</button>
+        </div>
+        <br>
+        <div style="overflow: hidden;">
+            <div style="width: 45%; float: left; margin-right: 5%;">
+                <h2>Intrusions</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Source IP</th>
+                            <th>Source Port</th>
+                            <th>Destination IP</th>
+                            <th>Destination Port</th>
+                            <th>Protocol</th>
+                        </tr>
+                    </thead>
+                    <tbody id="intrusions-tbody">
+                        <!-- Intrusions will be loaded here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div style="width: 45%; float: left;">
+                <h2>Non-Intrusion Packets</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Source IP</th>
+                            <th>Source Port</th>
+                            <th>Destination IP</th>
+                            <th>Destination Port</th>
+                            <th>Protocol</th>
+                        </tr>
+                    </thead>
+                    <tbody id="non-intrusions-tbody">
+                        <!-- Non-intrusion packets will be loaded here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    <br>
+        <div></div>
+</body>
+</html>
